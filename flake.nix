@@ -20,13 +20,37 @@
         libGL
         libxkbcommon
         wayland
-        xorg.libX11
-        xorg.libXcursor
-        xorg.libXi
-        xorg.libXrandr
+        libx11
+        libxcursor
+        libxi
+        libxrandr
       ];
+
+      version = "0.1.0";
+
+      mkPackage = pkgs: { pname, features ? [], extraBuildInputs ? [] }:
+        pkgs.rustPlatform.buildRustPackage {
+          inherit pname version;
+          src = ./.;
+          cargoLock.lockFile = ./Cargo.lock;
+          buildNoDefaultFeatures = true;
+          buildFeatures = features;
+          nativeBuildInputs = with pkgs; [ pkg-config ];
+          buildInputs = extraBuildInputs;
+          meta = {
+            description = "Lightweight LiveLink Face to VRChat OSC bridge";
+            homepage = "https://github.com/ForeverAnApple/LiveLinkVRCFaceTracking";
+            license = pkgs.lib.licenses.mit;
+            mainProgram = "livelink-vrcft";
+          };
+        };
     in
     {
+      overlays.default = final: prev: {
+        livelink-vrcft = self.packages.${final.system}.default;
+        livelink-vrcft-gui = self.packages.${final.system}.gui;
+      };
+
       devShells = forAllSystems (system:
         let
           pkgs = pkgsFor system;
@@ -51,22 +75,14 @@
           pkgs = pkgsFor system;
         in
         {
-          default = pkgs.rustPlatform.buildRustPackage {
+          default = mkPackage pkgs {
             pname = "livelink-vrcft";
-            version = "0.1.0";
-            src = ./.;
-            cargoLock.lockFile = ./Cargo.lock;
-            nativeBuildInputs = with pkgs; [ pkg-config ];
           };
 
-          gui = pkgs.rustPlatform.buildRustPackage {
+          gui = mkPackage pkgs {
             pname = "livelink-vrcft-gui";
-            version = "0.1.0";
-            src = ./.;
-            cargoLock.lockFile = ./Cargo.lock;
-            buildFeatures = [ "gui" ];
-            nativeBuildInputs = with pkgs; [ pkg-config ];
-            buildInputs = guiDeps pkgs;
+            features = [ "gui" ];
+            extraBuildInputs = guiDeps pkgs;
           };
         });
     };

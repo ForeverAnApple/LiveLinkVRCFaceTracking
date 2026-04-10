@@ -1,0 +1,93 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            suffix: linux-x86_64
+            ext: ""
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            suffix: windows-x86_64
+            ext: ".exe"
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+
+      - name: Install Linux GUI deps
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgl-dev \
+            libxkbcommon-dev \
+            libwayland-dev \
+            libx11-dev \
+            libxcursor-dev \
+            libxi-dev \
+            libxrandr-dev
+
+      - name: Build CLI (headless)
+        run: cargo build --release --no-default-features --target ${{ matrix.target }}
+
+      - name: Save CLI binary
+        shell: bash
+        run: cp "target/${{ matrix.target }}/release/livelink-vrcft${{ matrix.ext }}" "livelink-vrcft-${{ matrix.suffix }}${{ matrix.ext }}"
+
+      - name: Build GUI
+        run: cargo build --release --features gui --target ${{ matrix.target }}
+
+      - name: Save GUI binary
+        shell: bash
+        run: cp "target/${{ matrix.target }}/release/livelink-vrcft${{ matrix.ext }}" "livelink-vrcft-gui-${{ matrix.suffix }}${{ matrix.ext }}"
+
+      - name: Strip binaries (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          strip "livelink-vrcft-${{ matrix.suffix }}"
+          strip "livelink-vrcft-gui-${{ matrix.suffix }}"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: binaries-${{ matrix.suffix }}
+          path: livelink-vrcft*${{ matrix.suffix }}*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            livelink-vrcft-*
