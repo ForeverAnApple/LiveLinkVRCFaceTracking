@@ -90,7 +90,13 @@ fn main() {
     // GUI path: eframe takes over the main thread (default when compiled with gui feature)
     #[cfg(feature = "gui")]
     if !args.headless {
-        if let Err(e) = gui::run(Arc::clone(&state)) {
+        let gui_config = gui::GuiConfig {
+            listen_port,
+            osc_target: args.osc_target.clone(),
+            prefix: args.prefix.clone(),
+            send_rate: args.send_rate,
+        };
+        if let Err(e) = gui::run(Arc::clone(&state), gui_config) {
             error!("GUI error: {e}");
         }
         SHUTDOWN.store(true, Ordering::Relaxed);

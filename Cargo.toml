@@ -6,7 +6,7 @@ description = "Lightweight LiveLink Face to VRChat OSC bridge"
 license = "MIT"
 
 [features]
-default = []
+default = ["gui"]
 gui = ["dep:eframe"]
 
 [dependencies]
