@@ -43,6 +43,10 @@ struct Args {
     #[arg(long, default_value_t = 2.0)]
     timeout: f64,
 
+    /// OSC parameter prefix (e.g. "/avatar/parameters/FT/v2" for VRCFT avatars)
+    #[arg(long, default_value = "/avatar/parameters/FT/v2")]
+    prefix: String,
+
     /// Enable diagnostic logging to files in ./logs/
     #[arg(long)]
     log: bool,
@@ -64,6 +68,10 @@ enum Command {
         /// Forward captured messages to this address (VRChat)
         #[arg(long, default_value = "127.0.0.1:9000")]
         forward_to: String,
+
+        /// Enable diagnostic logging to logs/vrcft_sniff.log
+        #[arg(long)]
+        log: bool,
     },
 }
 
@@ -113,11 +121,12 @@ fn main() {
     if let Some(Command::Sniff {
         listen_port: sniff_port,
         forward_to,
+        log: sniff_log,
     }) = &args.command
     {
         let forward_addr: std::net::SocketAddr =
             forward_to.parse().expect("invalid --forward-to address");
-        run_sniff(*sniff_port, forward_addr, args.log);
+        run_sniff(*sniff_port, forward_addr, *sniff_log);
         return;
     }
 
@@ -173,14 +182,15 @@ fn main() {
 
     // Spawn OSC sender thread
     let send_state = Arc::clone(&state);
+    let prefix = args.prefix.clone();
     let send_thread = std::thread::Builder::new()
         .name("osc-sender".into())
-        .spawn(move || run_sender(osc_target, send_interval, timeout, send_state, output_log))
+        .spawn(move || run_sender(osc_target, send_interval, timeout, send_state, output_log, &prefix))
         .expect("failed to spawn sender thread");
 
     info!(
-        "listening for LiveLink on UDP :{listen_port}, sending OSC to {osc_target} at {}Hz",
-        args.send_rate
+        "listening for LiveLink on UDP :{listen_port}, sending OSC to {osc_target} at {}Hz, prefix={}",
+        args.send_rate, args.prefix
     );
 
     let _ = recv_thread.join();
@@ -284,6 +294,7 @@ fn run_sender(
     timeout: Duration,
     state: Arc<RwLock<TrackingState>>,
     log_file: Option<Arc<LogFile>>,
+    prefix: &str,
 ) {
     let mut sender = OscSender::new(target).expect("failed to create OSC sender");
 
@@ -321,7 +332,7 @@ fn run_sender(
             )
         };
 
-        let params = map_blendshapes(&blendshapes, connected);
+        let params = map_blendshapes(&blendshapes, connected, prefix);
 
         // Log output params (throttled to ~10Hz)
         if let Some(ref log) = log_file {
