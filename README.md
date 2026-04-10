@@ -2,6 +2,10 @@
 
 Lightweight LiveLink Face to VRChat OSC bridge in Rust. Receives ARKit face tracking data from the [LiveLink Face](https://apps.apple.com/us/app/live-link-face/id1495370836) iOS app over UDP and forwards it to VRChat as OSC parameters.
 
+## Demo
+
+![Demo](assets/demo.gif)
+
 ## Usage
 
 ```bash
