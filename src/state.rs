@@ -1,4 +1,4 @@
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::time::{Duration, Instant};
 
 pub const BLENDSHAPE_COUNT: usize = 61;
@@ -26,6 +26,9 @@ pub static CONNECTED: AtomicBool = AtomicBool::new(false);
 
 /// Global shutdown flag, set by Ctrl+C handler or GUI close.
 pub static SHUTDOWN: AtomicBool = AtomicBool::new(false);
+
+/// Total OSC bundles sent (atomic so sender can increment without write lock).
+pub static BUNDLES_SENT: AtomicU64 = AtomicU64::new(0);
 
 impl TrackingState {
     pub fn new() -> Self {

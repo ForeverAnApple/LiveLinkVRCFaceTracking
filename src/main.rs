@@ -15,7 +15,7 @@ use log::{debug, error, info, warn};
 
 use crate::mapping::map_blendshapes;
 use crate::osc::OscSender;
-use crate::state::{TrackingState, CONNECTED, SHUTDOWN};
+use crate::state::{TrackingState, BUNDLES_SENT, CONNECTED, SHUTDOWN};
 
 fn should_run() -> bool {
     !SHUTDOWN.load(Ordering::Relaxed)
@@ -179,7 +179,6 @@ fn run_sender(
 ) {
     let mut sender = OscSender::new(target).expect("failed to create OSC sender");
     let mut last_stats = Instant::now();
-    let mut send_count: u64 = 0;
 
     while should_run() {
         let start = Instant::now();
@@ -207,13 +206,14 @@ fn run_sender(
         if let Err(e) = sender.send_params(&params) {
             warn!("OSC send error: {e}");
         }
-        send_count += 1;
+        BUNDLES_SENT.fetch_add(1, Ordering::Relaxed);
 
         if last_stats.elapsed() >= Duration::from_secs(30) {
+            let sent = BUNDLES_SENT.load(Ordering::Relaxed);
             if connected {
-                info!("stats: {send_count} bundles sent, {packets_received} packets recv, device=\"{device_id}\"");
+                info!("stats: {sent} bundles sent, {packets_received} packets recv, device=\"{device_id}\"");
             } else {
-                info!("stats: {send_count} bundles sent, waiting for LiveLink packets");
+                info!("stats: {sent} bundles sent, waiting for LiveLink packets");
             }
             last_stats = Instant::now();
         }

@@ -4,7 +4,7 @@ use std::time::{Duration, Instant};
 
 use eframe::egui;
 
-use crate::state::{TrackingState, CONNECTED, SHUTDOWN};
+use crate::state::{TrackingState, BUNDLES_SENT, CONNECTED, SHUTDOWN};
 
 // Dark theme colors
 const BG: egui::Color32 = egui::Color32::from_rgb(24, 24, 28);
@@ -65,6 +65,7 @@ pub struct BridgeApp {
     enabled: bool,
     view: View,
     recv_rate: RateTracker,
+    send_rate: RateTracker,
 }
 
 impl BridgeApp {
@@ -75,6 +76,7 @@ impl BridgeApp {
             enabled: true,
             view: View::Home,
             recv_rate: RateTracker::new(),
+            send_rate: RateTracker::new(),
         }
     }
 
@@ -82,12 +84,14 @@ impl BridgeApp {
         let connected = CONNECTED.load(Ordering::Relaxed);
         let st = self.state.read().unwrap_or_else(|p| p.into_inner());
         self.recv_rate.update(st.packets_received);
+        self.send_rate.update(BUNDLES_SENT.load(Ordering::Relaxed));
         Snapshot {
             connected,
             device_id: st.device_id.clone(),
             subject_name: st.subject_name.clone(),
             last_packet_age_ms: st.last_packet_time.map(|t| t.elapsed().as_millis() as u64),
             recv_hz: self.recv_rate.rate,
+            send_hz: self.send_rate.rate,
         }
     }
 
@@ -214,9 +218,9 @@ impl BridgeApp {
         // Stats row — centered
         ui.vertical_centered(|ui| {
             ui.horizontal(|ui| {
-                stat_label(ui, "in", &format!("{:.0}/s", snap.recv_hz));
+                stat_label(ui, "msg/s in", &format!("{:.0}", snap.recv_hz));
                 ui.add_space(16.0);
-                stat_label(ui, "out", &format!("{}/s", self.config.send_rate));
+                stat_label(ui, "msg/s out", &format!("{:.0}", snap.send_hz));
                 if let Some(age) = snap.last_packet_age_ms {
                     ui.add_space(16.0);
                     stat_label(ui, "latency", &format!("{}ms", age));
@@ -271,6 +275,7 @@ struct Snapshot {
     subject_name: String,
     last_packet_age_ms: Option<u64>,
     recv_hz: f32,
+    send_hz: f32,
 }
 
 impl eframe::App for BridgeApp {
