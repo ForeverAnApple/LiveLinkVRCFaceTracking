@@ -31,9 +31,10 @@ cargo build --release --no-default-features  # CLI only
 ## Usage
 
 1. Install [LiveLink Face](https://apps.apple.com/us/app/live-link-face/id1495370836) on your iPhone
-2. Set target IP to your PC's IP, port `11111`
-3. Enable OSC in VRChat: **Action Menu > Options > OSC > Enabled**
-4. Run the bridge:
+2. In the app, set **Capture Mode** to **ARKit** — other modes do not send compatible data
+3. Set target IP to your PC's IP, port `11111`
+4. Enable OSC in VRChat: **Action Menu > Options > OSC > Enabled**
+5. Run the bridge:
 
 ```bash
 ./litelink
