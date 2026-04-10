@@ -15,6 +15,16 @@
         inherit system;
         overlays = [ rust-overlay.overlays.default ];
       };
+
+      guiDeps = pkgs: with pkgs; [
+        libGL
+        libxkbcommon
+        wayland
+        xorg.libX11
+        xorg.libXcursor
+        xorg.libXi
+        xorg.libXrandr
+      ];
     in
     {
       devShells = forAllSystems (system:
@@ -30,7 +40,9 @@
               rust
               pkg-config
               cargo-nextest
-            ];
+            ] ++ (guiDeps pkgs);
+
+            LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath (guiDeps pkgs);
           };
         });
 
@@ -45,6 +57,16 @@
             src = ./.;
             cargoLock.lockFile = ./Cargo.lock;
             nativeBuildInputs = with pkgs; [ pkg-config ];
+          };
+
+          gui = pkgs.rustPlatform.buildRustPackage {
+            pname = "livelink-vrcft-gui";
+            version = "0.1.0";
+            src = ./.;
+            cargoLock.lockFile = ./Cargo.lock;
+            buildFeatures = [ "gui" ];
+            nativeBuildInputs = with pkgs; [ pkg-config ];
+            buildInputs = guiDeps pkgs;
           };
         });
     };
