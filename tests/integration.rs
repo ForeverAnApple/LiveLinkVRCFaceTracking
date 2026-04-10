@@ -46,7 +46,7 @@ fn end_to_end_packet_flow() {
         .unwrap();
 
     // Start the binary as a subprocess
-    let exe = env!("CARGO_BIN_EXE_livelink-vrcft");
+    let exe = env!("CARGO_BIN_EXE_litelink");
     let mut child = std::process::Command::new(exe)
         .args([
             "--listen-port",
@@ -59,7 +59,7 @@ fn end_to_end_packet_flow() {
         .stdout(std::process::Stdio::null())
         .stderr(std::process::Stdio::null())
         .spawn()
-        .expect("failed to start livelink-vrcft");
+        .expect("failed to start litelink");
 
     // Give it a moment to bind
     std::thread::sleep(Duration::from_millis(200));

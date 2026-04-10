@@ -322,14 +322,14 @@ fn config_row(ui: &mut egui::Ui, label: &str, value: &str) {
 pub fn run(state: Arc<RwLock<TrackingState>>, config: GuiConfig) -> eframe::Result<()> {
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_title("livelink-vrcft")
+            .with_title("LiteLink")
             .with_inner_size([260.0, 310.0])
             .with_min_inner_size([240.0, 260.0])
             .with_always_on_top(),
         ..Default::default()
     };
     eframe::run_native(
-        "livelink-vrcft",
+        "litelink",
         options,
         Box::new(move |_cc| Ok(Box::new(BridgeApp::new(state, config)))),
     )

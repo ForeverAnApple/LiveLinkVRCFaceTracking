@@ -1,4 +1,4 @@
-# LiveLink VRCFaceTracking - Design
+# LiteLink - Design
 
 Lightweight Rust program that receives ARKit face tracking data from the
 Unreal Engine LiveLink Face iOS app and forwards it to VRChat via OSC.
@@ -7,8 +7,8 @@ Unreal Engine LiveLink Face iOS app and forwards it to VRChat via OSC.
 
 ```
 ┌─────────────────┐     UDP :11111      ┌──────────────┐     OSC :9000      ┌────────┐
-│ LiveLink Face   │ ──────────────────→  │ livelink-    │ ──────────────────→ │ VRChat │
-│ (iOS app)       │   big-endian f32s    │ vrcft        │   /avatar/params   │        │
+│ LiveLink Face   │ ──────────────────→  │ litelink     │ ──────────────────→ │ VRChat │
+│ (iOS app)       │   big-endian f32s    │              │   /avatar/params   │        │
 └─────────────────┘                      │              │                    └────────┘
                                          │  egui UI     │
                                          │  (optional)  │

@@ -22,7 +22,7 @@ fn should_run() -> bool {
 }
 
 #[derive(Parser)]
-#[command(name = "livelink-vrcft", about = "LiveLink Face → VRChat OSC bridge")]
+#[command(name = "litelink", about = "Fast & lightweight LiveLink Face → VRChat OSC bridge")]
 struct Args {
     /// UDP port to listen for LiveLink Face packets
     #[arg(long, default_value_t = 11111)]
@@ -307,7 +307,7 @@ fn run_benchmark(duration_secs: u64, state: &Arc<RwLock<TrackingState>>) {
 
     println!();
     println!("═══════════════════════════════════════════");
-    println!("  livelink-vrcft benchmark ({elapsed:.1}s)");
+    println!("  litelink benchmark ({elapsed:.1}s)");
     println!("═══════════════════════════════════════════");
     println!();
     println!("  Throughput");

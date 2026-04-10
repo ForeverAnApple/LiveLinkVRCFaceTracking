@@ -1,8 +1,8 @@
 [package]
-name = "livelink-vrcft"
+name = "litelink"
 version = "0.1.0"
 edition = "2024"
-description = "Lightweight LiveLink Face to VRChat OSC bridge"
+description = "Fast & lightweight LiveLink Face to VRChat OSC bridge"
 license = "MIT"
 
 [features]

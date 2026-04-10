@@ -1,66 +1,49 @@
-# livelink-vrcft
+# LiteLink
 
-Lightweight LiveLink Face to VRChat OSC bridge in Rust. Receives ARKit face tracking data from the [LiveLink Face](https://apps.apple.com/us/app/live-link-face/id1495370836) iOS app over UDP and forwards it to VRChat as OSC parameters.
-
-## Demo
+Fast & lightweight LiveLink Face → VRChat OSC bridge. Single binary, cross-platform, no SteamVR required.
 
 ![Demo](assets/demo.gif)
 
-## Usage
+## Install
+
+Grab a binary from [Releases](https://github.com/ForeverAnApple/LiveLinkVRCFaceTracking/releases):
+
+- `litelink-linux-x86_64` / `litelink-windows-x86_64.exe`
+- `litelink-gui-*` variants include a status window
+
+Or build from source (Rust 1.80+):
 
 ```bash
-cargo run
+cargo build --release                  # with GUI (default)
+cargo build --release --no-default-features  # CLI only
 ```
 
-By default, listens for LiveLink on UDP port 11111 and sends OSC to `127.0.0.1:9000`.
+## Usage
+
+1. Install [LiveLink Face](https://apps.apple.com/us/app/live-link-face/id1495370836) on your iPhone
+2. Set target IP to your PC's IP, port `11111`
+3. Enable OSC in VRChat: **Action Menu > Options > OSC > Enabled**
+4. Run the bridge:
+
+```bash
+./litelink
+```
+
+Listens on UDP `:11111`, sends OSC to `127.0.0.1:9000`.
 
 ### Options
 
 ```
 --listen-port <PORT>    LiveLink UDP port (default: 11111)
---osc-target <ADDR>     VRChat OSC address (default: 127.0.0.1:9000)
+--osc-target <ADDR>     VRChat OSC target (default: 127.0.0.1:9000)
 --prefix <PREFIX>       OSC parameter prefix (default: /avatar/parameters/FT/v2)
 --send-rate <HZ>        OSC send rate in Hz (default: 60)
 --timeout <SECS>        Connection timeout in seconds (default: 2.0)
+--headless              Run without GUI (GUI build only)
+--benchmark <SECS>      Performance benchmark for N seconds
 ```
 
-### iPhone Setup
+### Avatar compatibility
 
-1. Install [LiveLink Face](https://apps.apple.com/us/app/live-link-face/id1495370836) on your iPhone
-2. In the app settings, set the target IP to your PC's local IP address and port to 11111
-3. Run `cargo run` on your PC
-4. Start streaming in the app
+Default prefix (`/avatar/parameters/FT/v2`) works with [VRCFaceTracking](https://github.com/benaclejames/VRCFaceTracking) Unified Expressions avatars. Change `--prefix` if your avatar uses different parameter names.
 
-### Avatar Compatibility
-
-The `--prefix` flag controls the OSC parameter path prefix. The default (`/avatar/parameters/FT/v2`) works with avatars set up for [VRCFaceTracking](https://github.com/benaclejames/VRCFaceTracking). If your avatar uses a different naming convention, adjust the prefix accordingly.
-
-## Building
-
-Requires Rust 1.80+. Uses a Nix flake for development:
-
-```bash
-# With nix + direnv (recommended)
-direnv allow
-
-# Or manually
-nix develop
-
-# Build
-cargo build --release
-
-# Test
-cargo nextest run
-```
-
-## Architecture
-
-- **livelink.rs** -- UDP packet parser for the LiveLink Face protocol (61 ARKit blendshapes, big-endian)
-- **mapping.rs** -- ARKit blendshape to VRChat Unified Expressions mapping with clamping
-- **osc.rs** -- OSC bundle construction with change detection (only sends changed values)
-- **state.rs** -- Shared tracking state between receiver and sender threads
-- **main.rs** -- CLI args, thread orchestration, graceful shutdown
-
-## License
-
-MIT

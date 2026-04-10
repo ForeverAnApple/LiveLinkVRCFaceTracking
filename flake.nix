@@ -38,17 +38,17 @@
           nativeBuildInputs = with pkgs; [ pkg-config ];
           buildInputs = extraBuildInputs;
           meta = {
-            description = "Lightweight LiveLink Face to VRChat OSC bridge";
+            description = "Fast & lightweight LiveLink Face to VRChat OSC bridge";
             homepage = "https://github.com/ForeverAnApple/LiveLinkVRCFaceTracking";
             license = pkgs.lib.licenses.mit;
-            mainProgram = "livelink-vrcft";
+            mainProgram = "litelink";
           };
         };
     in
     {
       overlays.default = final: prev: {
-        livelink-vrcft = self.packages.${final.system}.default;
-        livelink-vrcft-gui = self.packages.${final.system}.gui;
+        litelink = self.packages.${final.system}.default;
+        litelink-gui = self.packages.${final.system}.gui;
       };
 
       devShells = forAllSystems (system:
@@ -76,11 +76,11 @@
         in
         {
           default = mkPackage pkgs {
-            pname = "livelink-vrcft";
+            pname = "litelink";
           };
 
           gui = mkPackage pkgs {
-            pname = "livelink-vrcft-gui";
+            pname = "litelink-gui";
             features = [ "gui" ];
             extraBuildInputs = guiDeps pkgs;
           };

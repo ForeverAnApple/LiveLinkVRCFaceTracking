@@ -1,4 +1,4 @@
-# Project: livelink-vrcft
+# Project: litelink
 
 Lightweight LiveLink Face → VRChat OSC bridge in Rust.
 
